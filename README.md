@@ -2,8 +2,6 @@
 
 A Grunt interface into the Amazon Web Services Node.JS SDK `aws-sdk`
 
-[![NPM version](https://nodei.co/npm/grunt-aws.png?downloads=true)](https://npmjs.org/package/grunt-aws)
-
 ## Getting Started
 This plugin requires Grunt `0.4.x`
 
@@ -29,7 +27,6 @@ Currently however, it only supports:
 * [Simple Storage Service `"s3"`](#the-s3-task)
 * [Route 53 `"route53"`](#the-route53-task)
 * [CloudFront `"cloudfront"`](#the-cloudfront-task)
-* [SNS `"sns"`](#the-sns-task)
 
 -----
 
@@ -67,21 +64,17 @@ See the complete example [here](https://github.com/jpillora/grunt-aws/tree/maste
 
 ### Options
 
-#### `accessKeyId` *required* (String)
+#### `accessKeyId` *required* (String) 
 
 Amazon access key id
 
-#### `secretAccessKey` *required* (String)
+#### `secretAccessKey` *required* (String) 
 
 Amazon secret access key
 
 #### `bucket` *required* (String)
 
 Bucket name
-
-#### `sessionToken` (String)
-
-Amazon session token, required if you're using temporary access keys
 
 #### `region` (String)
 
@@ -140,16 +133,6 @@ Default `true`
 
 Upload files, whether or not they already exist (set to `false` if you never update existing files).
 
-### CopyFile (String)
-Default `None`
-
-Path to copy filewithin S3. ex. `my-bucket2/output/d.txt`
-
-### CopyFrom (String)
-Default `None`
-
-Path to copy all files within S3. ex. `my-bucket2/output/`
-
 #### `cache` (Boolean)
 
 Default `true`
@@ -165,7 +148,7 @@ Default `60*60*1000` (1hr)
 Number of milliseconds to wait before retrieving the
 object list from S3. If you only modify this bucket
 from `grunt-aws` on one machine then it can be `Infinity`
-if you like. To disable cache, set it to `0`.
+if you like. To disable cache, set it to `0`. 
 
 #### `headers` (Object)
 
@@ -177,14 +160,14 @@ The following are allowed:
 * `ContentType` (will override mime type lookups)
 * `ContentDisposition`
 * `ContentEncoding`
-* `CacheControl` (accepts a string or converts numbers into header as `max-age=<num>, public`)
+* `CacheControl` (converts numbers into strings as `max-age=<num>, public`)
 * `Expires` (converts dates to strings with `toUTCString()`)
 * `GrantFullControl`
 * `GrantRead`
 * `GrantReadACP`
 * `GrantWriteACP`
 * `ServerSideEncryption` (`"AES256"`)
-* `StorageClass` (`"STANDARD"` or `"REDUCED_REDUNDANCY"`)
+* `StorageClass` (`"STANDARD"` or `"REDUCED_REDUNDANCY"`) 
 * `WebsiteRedirectLocation`
 
 The properties not listed are still available as:
@@ -204,7 +187,7 @@ For example `{Foo:"42"}` becomes `x-amz-meta-foo:42`.
 
 #### `charset` (String)
 
-Add a charset to every one of your `Content-Type`. For example: `utf-8`. If this is not set, then all text files will get charset of UTF-8 by default.
+Define a charset to set on your ContentType. Ie. `utf-8`
 
 #### `mime` (Object)
 
@@ -328,16 +311,6 @@ s3: {
     src: "secrets/**"
   },
 
-  //upload the public/ folder with a custom Cache-control header
-  longTym: {
-    options: {
-      headers: {
-        CacheControl: 'max-age=900, public, must-revalidate'
-      }
-    }
-    src: "public/**"
-  },
-
   //upload the public/ folder with a 2 year cache time
   longTym: {
     options: {
@@ -347,7 +320,6 @@ s3: {
     }
     src: "public/**"
   },
-
   //upload the public/ folder with a specific expiry date
   beryLongTym: {
     options: {
@@ -356,25 +328,7 @@ s3: {
       }
     }
     src: "public/**"
-  },
-
-  //Copy file directly from s3 bucket to a different bucket
-  copyFile: {
-    src: "build/c.txt",
-    dest: "output/d.txt",
-    options: {
-      copyFile: "my-bucket2/output/d.txt"
-    }
-  },
-
-  //Copy all files in directory
-  copyFiles: {
-    src: "public/**",
-    options: {
-      copyFrom: 'my-bucket2/public'
-    }
   }
-
 }
 ```
 
@@ -425,11 +379,11 @@ To create two new records - the first resolving to an IP address and the second 
 
 ### Options
 
-#### `accessKeyId` *required* (String)
+#### `accessKeyId` *required* (String) 
 
 Amazon access key id
 
-#### `secretAccessKey` *required* (String)
+#### `secretAccessKey` *required* (String) 
 
 Amazon secret access key
 
@@ -437,9 +391,9 @@ Amazon secret access key
 
 An object containing names of zones and a list of DNS records to be created for this zone in Route 53.
 
-Each record requires `name`, `type` and `value` to be set. The `name` property is the new domain to be created. The `type` is the DNS type e.g. CNAME, ANAME, etc.. The `value` is a list of domain names or IP addresses that the DNS entry will resolve to.
+Each record requires `name`, `type` and `value` to be set. The `name` property is the new domain to be created. The `type` is the DNS type e.g. CNAME, ANAME, etc.. The `value` is a list of domain names or IP addresses that the DNS entry will resolve to. 
 
-It is also possible to specify any of the additional options described in the [ResourceRecordSet section of the changeResourceRecordSets method](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html#changeResourceRecordSets-property). For example, `AliasTarget` could be used to set up an alias record.
+It is also possible to specify any of the additional options described in the [ResourceRecordSet section of the changeResourceRecordSets method](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html#changeResourceRecordSets-property). For example, `AliasTarget` could be used to set up an alias record.	
 
 #### `TTL` (Number)
 
@@ -457,7 +411,7 @@ Performs a preview run displaying what would be modified
 
 Default `20`
 
-Number of Route53 operations that may be performed concurrently
+Number of Route53 operations that may be performed concurrently 
 
 #### `cache` (Boolean)
 
@@ -480,14 +434,11 @@ Cache data returned from Route 53. Once records
 
 ### Features
 
-* Invalidate a list of files, up to the maximum allowed by CloudFront, like `/index.html` and `/pages/whatever.html`
-* Update CustomErrorResponses
-* Update OriginPath on the first origin in the distribution, other origins will stay the same
-* Update DefaultRootObject
+* Invalidate a list of files, up to the maximum allowed by CloudFront
 
 ### Usage
 
-A sample configuration is below. Each property must follow the requirements from the [CloudFront updateDistribution Docs](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFront.html#updateDistribution-property).
+To invalidate the files `/index.html` and `/pages/whatever.html`
 
 ```js
   grunt.initConfig({
@@ -497,22 +448,10 @@ A sample configuration is below. Each property must follow the requirements from
         accessKeyId: "<%= aws.accessKeyId %>",
         secretAccessKey: "<%= aws.secretAccessKey %>",
         distributionId: '...',
-      },
-      html: {
-        options: {
-          invalidations: [
-            '/index.html',
-            '/pages/whatever.html'
-          ],
-          customErrorResponses: [ {
-            ErrorCode: 0,
-            ErrorCachingMinTTL: 0,
-            ResponseCode: 'STRING_VALUE',
-            ResponsePagePath: 'STRING_VALUE'
-          } ],
-          originPath: 'STRING_VALUE',
-          defaultRootObject: 'STRING_VALUE'
-        }
+        invalidations: [
+          '/index.html',
+          '/pages/whatever.html'
+        ]
       }
     }
   });
@@ -520,11 +459,11 @@ A sample configuration is below. Each property must follow the requirements from
 
 ### Options
 
-#### `accessKeyId` *required* (String)
+#### `accessKeyId` *required* (String) 
 
 Amazon access key id
 
-#### `secretAccessKey` *required* (String)
+#### `secretAccessKey` *required* (String) 
 
 Amazon secret access key
 
@@ -532,83 +471,15 @@ Amazon secret access key
 
 The CloudFront Distribution ID to be acted on
 
-#### `invalidations` *optional* (Array)
+#### `invalidations` *required* (Array)
 
 An array of strings that are each a root relative path to a file to be invalidated
 
-#### `customErrorResponses` *optional* (Array)
-
-An array of objects with the properties shown above
-
-#### `originPath` *optional* (String)
-
-A string to set the origin path for the first origin in the distribution
-
-#### `defaultRootObject` *optional* (String)
-
-A string to set the default root object for the distribution
-
-## The "sns" task
-
-### Features
-
-* Publish to a SNS topic
-
-### Usage
-
-To public a message
-
-```js
-  grunt.initConfig({
-    aws: grunt.file.readJSON("credentials.json"),
-    cloudfront: {
-      options: {
-        accessKeyId: "<%= aws.accessKeyId %>",
-        secretAccessKey: "<%= aws.secretAccessKey %>",
-        region: '<%= aws.region %>',
-        target: 'AWS:ARN:XXXX:XXXX:XXXX',
-        message: 'You got it',
-        subject: 'A Notification'
-      }
-    }
-  });
-```
-
-### Options
-
-#### `accessKeyId` *required* (String)
-
-Amazon access key id
-
-#### `secretAccessKey` *required* (String)
-
-Amazon secret access key
-
-#### `region` *required* (String)
-
-The region that the Topic is hosted under
-
-#### `target` *required* (String)
-
-The AWS ARN for the topic
-
-#### `message` *required* (String)
-
-The message content for the notification
-
-#### `subject` *required* (String)
-
-The subject to use for the notification
 
 ### References
 
-* [SNS AWS SDK API Docs](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SNS.html)
+* [CloudFront AWS SDK API Docs](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFront.html)
 
-### Todo
-
-* Add other SNS functionality
-
----
 
 #### MIT License
 
@@ -632,3 +503,8 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+
+

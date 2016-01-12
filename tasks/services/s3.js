@@ -25,12 +25,8 @@ module.exports = function(grunt) {
     cache: true,
     overwrite: true,
     createBucket: false,
-    enableWeb: false,
-    signatureVersion: 'v4'
+    enableWeb: false
   };
-
-  //Action taking place.
-  var action = "Put"
 
   //s3 task
   grunt.registerMultiTask("s3", DESC, function() {
@@ -51,6 +47,9 @@ module.exports = function(grunt) {
       return !grunt.file.isDir(file.src);
     });
 
+    if(!files.length)
+      return grunt.log.ok("No files matched");
+
     //mark as async
     var done = this.async();
     //get options
@@ -70,7 +69,6 @@ module.exports = function(grunt) {
     AWS.config.update(_.pick(opts,
       'accessKeyId',
       'secretAccessKey',
-      'sessionToken',
       'region',
       'sslEnabled',
       'maxRetries',
@@ -78,7 +76,7 @@ module.exports = function(grunt) {
     ), true);
 
     //s3 client
-    var S3 = new AWS.S3({signatureVersion: opts.signatureVersion});
+    var S3 = new AWS.S3();
 
     //dry run prefix
     var DRYRUN = opts.dryRun ? "[DRYRUN] " : "";
@@ -126,19 +124,6 @@ module.exports = function(grunt) {
     //convert numbers and dates
     if(typeof baseObject.CacheControl === 'number')
       baseObject.CacheControl = "max-age="+baseObject.CacheControl+", public";
-    else if (typeof baseObject.CacheControl === 'object') {
-      var val = baseObject.CacheControl,
-          maxage = val.MaxAge || null,
-          swr = val.StaleWhileRevalidate || null;
-      if (!maxage) {
-        grunt.fail.warn("max_age is required for Cache-Control header");
-      }
-      if (swr) {
-        baseObject.CacheControl = "max-age="+maxage+", stale-while-revalidate="+swr+", public";
-      } else {
-        baseObject.CacheControl = "max-age="+maxage+", public";
-      }
-    }
 
     if(baseObject.Expires instanceof Date)
       baseObject.Expires = baseObject.Expires.toUTCString();
@@ -167,11 +152,10 @@ module.exports = function(grunt) {
     if(opts.enableWeb)
       subtasks.push(enableWebHosting);
 
-    if(!opts.cache && files.length)
+    if(!opts.cache)
       subtasks.push(getFileList);
 
-    if(files.length)
-      subtasks.push(copyAllFiles);
+    subtasks.push(copyAllFiles);
 
     //start!
     async.series(subtasks, taskComplete);
@@ -179,18 +163,9 @@ module.exports = function(grunt) {
     //------------------------------------------------
 
     function createBucket(callback) {
-      var params = {
-        Bucket: opts.bucket,
-        ACL: opts.access
-      };
-      if (opts.region && opts.region !== 'us-east-1')
-          params.CreateBucketConfiguration = { LocationConstraint: opts.region };
       //check the bucket doesn't exist first
       S3.listBuckets(function(err, data){
-        if(err) {
-          err.message = 'createBucket:S3.listBuckets: ' + err.message;
-          return callback(err);
-        }
+        if(err) return callback(err);
         var existingBucket = _.detect(data.Buckets, function(bucket){
           return opts.bucket === bucket.Name;
         });
@@ -201,11 +176,12 @@ module.exports = function(grunt) {
           grunt.log.writeln('Creating bucket ' + opts.bucket + '...');
           //create the bucket using the bucket, access and region options
           if (opts.dryRun) return callback();
-          S3.createBucket(params, function(err, data){
-            if(err) {
-              err.message = 'createBucket:S3.listBuckets:S3.createBucket: ' + err.message;
-              return callback(err);
-            }
+          S3.createBucket({
+            Bucket: opts.bucket,
+            ACL: opts.access,
+            CreateBucketConfiguration: { LocationConstraint: opts.region }
+          }, function(err, data){
+            if(err) return callback(err);
             grunt.log.writeln('New bucket\'s location is: ' + data.Location);
             // Disable caching if bucket is newly created
             opts.cache = false;
@@ -216,28 +192,19 @@ module.exports = function(grunt) {
     }
 
     function enableWebHosting(callback) {
-      var defaultWebOptions = {
-        "grunt-overwrite": false,
-        IndexDocument: { Suffix : 'index.html' }
-      };
-      var webOptions = _.isObject(opts.enableWeb) ? opts.enableWeb : defaultWebOptions;
-
       S3.getBucketWebsite({ Bucket:opts.bucket }, function(err){
-        if ((err && err.name === 'NoSuchWebsiteConfiguration') || webOptions["grunt-overwrite"]){
-          delete webOptions["grunt-overwrite"];
+        if (err && err.name === 'NoSuchWebsiteConfiguration'){
           //opts.enableWeb can be the params for WebsiteRedirectLocation.
           //Otherwise, just set the index.html as default suffix
           grunt.log.writeln('Enabling website configuration on ' + opts.bucket + '...');
+          var webOptions = _.isObject(opts.enableWeb) ? opts.enableWeb : { IndexDocument: { Suffix : 'index.html' }};
           if (opts.dryRun) return callback();
           S3.putBucketWebsite({
             Bucket: opts.bucket,
             WebsiteConfiguration: webOptions
           }, callback);
-        } else {
-          if(err){
-            err.message = 'enableWebHosting:S3.getBucketWebsite: ' + err.message;
-          }
-          return callback(err);
+        }else{
+          callback(err);
         }
       });
     }
@@ -288,10 +255,7 @@ module.exports = function(grunt) {
           Marker: marker,
           Prefix: prefix
         }, function(err, objs) {
-          if(err) {
-            err.message = 'getFileList:fetchObjects:S3.listObjects: ' + err.message;
-            return callback(err);
-          }
+          if(err) return callback(err);
 
           //store results
           objs.Contents.forEach(function(obj) {
@@ -353,47 +317,25 @@ module.exports = function(grunt) {
       //extend the base object
       var object = Object.create(baseObject);
       object.Key = dest;
-
+      object.Body = contents;
       if(!object.ContentType)
         object.ContentType = mime.lookup(dest);
 
-      // Set the charset, default text type mime types to UTF-8
-      var charset = mime.charsets.lookup(object.ContentType, '') || opts.charset;
-      if (charset) object.ContentType += '; charset=' + charset;
+      // Set a default charset
+      if (opts.charset) object.ContentType += '; charset=' + opts.charset;
 
-      if (opts.copyFrom || opts.copyFile) {
-        if (opts.copyFrom) {
-          var copySource = src.split('/');
-          copySource[0] =  opts.copyFrom;
-          copySource = copySource.join('/');
-        } else {
-          copySource = opts.copyFile;
-        }
-        object.MetadataDirective  = "REPLACE";
-        object.CopySource = copySource;
-        action = "Copy";
-        S3.copyObject(object, putComplete)
-      } else {
-        //upload!
-        object.Body = contents;
-        S3.putObject(object, putComplete);
-      }
+      //upload!
+      S3.putObject(object, putComplete);
 
       function putComplete(err, results) {
         if(err) {
           return callback("Put '" + dest + "' failed...\n" + err + "\n ");
         }
-        grunt.log.ok(DRYRUN + action + " '" + dest + "'");
+        grunt.log.ok(DRYRUN + "Put '" + dest + "'");
         if(!opts.dryRun)
           stats.puts++;
         if(results)
           cache.files[dest] = JSON.parse(results.ETag);
-
-        if(stats.puts % 5 == 0) {
-          // Periodically update the cache
-          CacheMgr.put(cache);
-        }
-
         callback();
       }
 
@@ -404,9 +346,9 @@ module.exports = function(grunt) {
         grunt.fail.warn(err);
         return done(false);
       }
-
+      
       //all done
-      grunt.log.ok(action + " " + stats.puts + " files");
+      grunt.log.ok("Put " + stats.puts + " files");
       if(opts.cache && (stats.puts || stats.dels || stats.refreshed || stats.newOptions))
         CacheMgr.put(cache);
       done(err);

@@ -1,7 +1,7 @@
 {
   "name": "grunt-aws",
   "description": "A Grunt interface into the Amazon Node.JS SDK",
-  "version": "0.6.0",
+  "version": "0.4.2",
   "homepage": "https://github.com/jpillora/grunt-aws",
   "author": {
     "name": "Jaime Pillora",
@@ -9,8 +9,14 @@
     "url": "http://jpillora.com"
   },
   "maintainers": [
-    "dev@jpillora.com",
-    "b.j.rossiter@gmail.com"
+    {
+      "name": "jpillora",
+      "email": "jpillora@gmail.com"
+    },
+    {
+      "name": "bxjx",
+      "email": "b.j.rossiter@gmail.com"
+    }
   ],
   "repository": {
     "type": "git",
@@ -30,7 +36,6 @@
     "amazon",
     "aws",
     "s3",
-    "cloudfront",
     "cache",
     "caching",
     "gzip",
@@ -38,9 +43,27 @@
   ],
   "dependencies": {
     "async": "~0.2.9",
-    "aws-sdk": "~2.1.29",
+    "aws-sdk": "~1.12.0",
     "lodash": "~1.3.1",
     "mime": "~1.2.11",
     "mkdirp": "^0.5.1"
-  }
+  },
+  "gitHead": "d6ebbdf241773d4505547e3a7af540fd4a6978b9",
+  "_id": "grunt-aws@0.4.2",
+  "scripts": {},
+  "_shasum": "dfe6aec99331c4509597104d08d3fb5b6ec4ba21",
+  "_from": "grunt-aws@^0.4.0",
+  "_npmVersion": "2.5.0",
+  "_nodeVersion": "0.12.0",
+  "_npmUser": {
+    "name": "jpillora",
+    "email": "dev@jpillora.com"
+  },
+  "dist": {
+    "shasum": "dfe6aec99331c4509597104d08d3fb5b6ec4ba21",
+    "tarball": "http://registry.npmjs.org/grunt-aws/-/grunt-aws-0.4.2.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/grunt-aws/-/grunt-aws-0.4.2.tgz",
+  "readme": "ERROR: No README data found!"
 }

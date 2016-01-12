@@ -27,21 +27,8 @@ module.exports = function(grunt) {
         invalidations: [
           "/index.html"
         ]
-      },
-      invalidate: {}
-    },
-
-    sns: {
-      options: {
-        accessKeyId: "<%= aws.accessKeyId %>",
-        secretAccessKey: "<%= aws.secretAccessKey %>",
-        region: "...",
-        target: "...",
-        message: "...",
-        subject: "..."
       }
     }
-
   });
 
   grunt.registerTask("default", ["s3"]);

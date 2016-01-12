@@ -1,7 +1,7 @@
 var fs = require("fs"),
     path = require("path"),
     dirPath = path.join(__dirname,"..","caches"),
-    mkdirpSync = require('mkdirp').sync;
+    mkdirpSync = require("mkdirp").sync;
 
 if(!fs.existsSync(dirPath))
   fs.mkdirSync(dirPath);
@@ -30,10 +30,8 @@ exports.put = function(cache) {
   if(!name)
     throw "Object not found. Only put objects that have been 'get()'";
   var p = cachePath(name);
-  // ensures path to cache is available for directories inside bucket
-  mkdirpSync(mkdirp(path.dirname(p)));
   var contents = JSON.stringify(cache, null, 2);
-
+  mkdirpSync(path.dirname(p));
   fs.writeFileSync(p, contents);
 };
 
